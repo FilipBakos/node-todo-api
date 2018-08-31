@@ -1,13 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+let {ObjectID} = require('mongodb');
 
 let {mongoose} = require('./db/mongoose');
 let {User} = require('./models/user');
 let {Todo} = require('./models/todo');
 
 var app = express();
-
-
 
 const port =  process.env.PORT || 3000 ; 
 
@@ -25,12 +24,48 @@ app.post('/todos', (req, res) => {
 		});
 });
 
+app.get('/todos',(req, res) => {
+	Todo.find().then((todos) => {
+		res.send({
+			todos
+		});
+	}, (e) => {
+		res.status(400).send(e);
+	})
+});
+
+app.get('/todos/:id', (req, res) => {
+	let id = req.params.id;
+	
+	if(!ObjectID.isValid(id)) {
+		res.status(404).send();
+	}
+
+	Todo.findById(id).then((result) => {
+		if(!result) {
+			return res.send('No data at that ID');
+		}
+		res.send({result});
+	}).catch((e) => {
+		res.status(400).send();
+	});
+});
+
+// app.post('/users', (req, res) => {
+// 	let user = new User({
+// 		email: req.body.email
+// 	});
+
+// 	user.save().then((doc) => {
+// 		res.send(doc);
+// 	}, (e) => {
+// 		res.status(400).send(e);
+// 	});
+// });
+
 app.listen(port, () => {
 	console.log('App is on port ',port);
 });
-
-
-
 
 // var Todo = mongoose.model('Todo', {
 // 	text: {
